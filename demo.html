@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>SudokuHints Demo</title>
+  </head>
+  <body>
+    <h1>SudokuHints Demo</h1>
+    <pre id="output"></pre>
+
+    <script type="module">
+      import SudokuHints from "./src/sudoku_hints.js";
+
+      const board = [
+        [0,2,0, 0,0,0, 6,0,0],
+        [0,0,0, 4,0,0, 0,0,0],
+        [0,0,7, 0,0,0, 0,0,3],
+        [0,0,0, 0,5,0, 0,6,0],
+        [0,0,0, 0,0,0, 0,0,0],
+        [0,1,0, 0,2,0, 0,0,0],
+        [3,0,0, 0,0,0, 8,0,0],
+        [0,0,0, 0,0,7, 0,0,0],
+        [0,0,6, 0,0,0, 0,3,0],
+      ];
+
+      const candidates = [...Array(9)].map(() => [...Array(9)].map(() => []));
+      const engine = new SudokuHints(board, candidates);
+
+      const hints = engine.checkNakedSingleHints();
+      document.getElementById("output").textContent = JSON.stringify(hints, null, 2);
+    </script>
+  </body>
+</html>
