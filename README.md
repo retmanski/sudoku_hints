@@ -16,8 +16,6 @@ Used in production on **HeadScratcher**, a free (Daily Sudoku)[https://headscrat
 
 No dependencies. No build tooling. Works directly in the browser with `import` or via Rails 8 importmap.
 
----
-
 ## Features
 
 - Pure JavaScript ES module — drop-in and portable  
@@ -26,7 +24,34 @@ No dependencies. No build tooling. Works directly in the browser with `import` o
 - Returns machine-readable hint structures (row/col coordinates, technique names, descriptive text, links)  
 - Suitable for use in web apps, PWAs, and teaching tools
 
----
+## Supported Techniques
+
+Most existing Sudoku solvers use machine friendly recursive backtracking algorithms (aka brute force), rather than the simpler approaches that human solvers tend to use. On [HeadScratcher](https://headscratcher.world) Daily Sudoku users can request a hint and then each of these is tried in turn - roughly mirroring the order that humans would apply each technique to solve a puzzle:
+
+### Full House
+A row, column, or subgrid has 8 digits placed — the last one is forced.
+
+### Naked Single
+A cell has only one possible candidate.
+
+### Hidden Single
+A digit appears only once in the candidate list for a house.
+
+### Pointing
+Candidates for a digit inside a subgrid lie entirely within one row/column.
+
+### Claiming (Box-Line Reduction)
+Candidates for a digit in a row/column lie entirely inside one subgrid.
+
+### Naked Pair / Triple / Quad
+Two/three/four cells have matching candidate sets; eliminate those digits elsewhere in the unit.
+
+### Hidden Pair / Triple / Quad
+Two/three/four digits appear only in the same group of cells.
+
+### X-Wing
+Two rows share the same pair of candidate columns (or vice-versa), allowing cross-elimination.
+
 
 ## Installation
 
