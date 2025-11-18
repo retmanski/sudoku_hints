@@ -12,8 +12,7 @@ It analyses a 9×9 Sudoku board and produces structured hints for common solving
 - Hidden Pairs / Triples / Quads  
 - X-Wing  
 
-Used in production on **HeadScratcher**, a free daily Sudoku site:  
-https://headscratcher.world
+Used in production on **HeadScratcher**, a free (Daily Sudoku)[https://headscratcher.world/sudokus) site.  
 
 No dependencies. No build tooling. Works directly in the browser with `import` or via Rails 8 importmap.
 
