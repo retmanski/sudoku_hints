@@ -58,7 +58,7 @@ Two rows share the same pair of candidate columns (or vice-versa), allowing cros
 ### Import directly (CDN)
 
 ```js
-  import SudokuHints from "https://cdn.jsdelivr.net/gh/smoothcontract/sudoku_hints@v1.0.0/src/sudoku_hints.js";
+  import SudokuHints from "https://cdn.jsdelivr.net/gh/retmanski/sudoku_hints@v1.0.0/src/sudoku_hints.js";
 ```
 
 ### Install via Git submodule (recommended for apps)
@@ -66,7 +66,7 @@ Two rows share the same pair of candidate columns (or vice-versa), allowing cros
 Add the repo as a submodule:
 
 ```bash
-  git submodule add https://github.com/smoothcontract/sudoku_hints.git path/to/submodule
+  git submodule add https://github.com/retmanski/sudoku_hints.git path/to/submodule
 ```
 
 ### Using with Rails 8 (no npm, no bundler) — importmap 
@@ -74,7 +74,7 @@ Add the repo as a submodule:
 Add the repo as a submodule:
 
 ```bash
-  git submodule add https://github.com/smoothcontract/sudoku_hints.git vendor/javascript/sudoku_hints
+  git submodule add https://github.com/retmanski/sudoku_hints.git vendor/javascript/sudoku_hints
 ```
 
 Pin it in `config/importmap.rb`:
@@ -127,7 +127,7 @@ Use it in your application JS:
 To contribute:
 
 ```bash
-  git clone https://github.com/smoothcontract/sudoku_hints
+  git clone https://github.com/retmanski/sudoku_hints
   cd sudoku_hints
   # edit src/sudoku_hints.js
 ```
@@ -155,6 +155,6 @@ Released under the MIT License. See LICENSE￼for details.
 
 ## Credits
 
-SudokuHints is developed by [Andrew Retmanski](https://github.com/smoothcontract)
+SudokuHints is developed by [Andrew Retmanski](https://github.com/retmanski)
 
 Originally extracted from the hint logic powering [HeadScratcher](https://headscratcher.world)
