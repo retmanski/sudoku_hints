@@ -95,6 +95,46 @@ export default class SudokuHints {
     return cells;
   }
 
+  emptyCellInRow(row) {
+    for (let col = 0; col < 9; col++) {
+      if (this.boardNums[row][col] === 0) return { row, col };
+    }
+  }
+
+  emptyCellInCol(col) {
+    for (let row = 0; row < 9; row++) {
+      if (this.boardNums[row][col] === 0) return { row, col };
+    }
+  }
+
+  emptyCellInHouse(largeRow, largeCol) {
+    const sqRow = largeRow * 3;
+    const sqCol = largeCol * 3;
+
+    for (let row = sqRow; row < sqRow + 3; row++) {
+      for (let col = sqCol; col < sqCol + 3; col++) {
+        if (this.boardNums[row][col] === 0) return { row, col };
+      }
+    }
+  }
+
+  houseCellFromIndex(largeRow, largeCol, index) {
+    return {
+      row: (largeRow * 3) + Math.floor(index / 3),
+      col: (largeCol * 3) + index % 3
+    };
+  }
+
+  missingDigit(values) {
+    for (let digit = 1; digit <= 9; digit++) {
+      if (!values.includes(digit)) return digit;
+    }
+  }
+
+  describeDigits(digits) {
+    return digits.join(", ");
+  }
+
   candidatesRow(row) {
     const cells = [];
 
@@ -165,7 +205,12 @@ export default class SudokuHints {
             link: '',
             linkText: 'Playing tips',
             title: 'Wrong value',
-            description: 'Incorrect value for this cell.'
+            description: 'Incorrect value for this cell.',
+            details: {
+              row: row,
+              col: col,
+              description: `This cell should contain the digit ${solution[row][col]} instead.`
+            }
           });
         }
       }
@@ -179,26 +224,42 @@ export default class SudokuHints {
 
     for (let row = 0; row < 9; row++) {
       if (this.boardRow(row).filter(cell => cell > 0).length == 8) {
+        const cell = this.emptyCellInRow(row);
+        const digit = this.missingDigit(this.boardRow(row));
+
         hints.push({
           row: row,
           type: 'fullHouse',
           link: 'full-house',
           linkText: 'Learn this technique',
           title: 'Full house',
-          description: 'This row has one empty cell — fill in the last missing digit.'
+          description: 'This row has one empty cell — fill in the last missing digit.',
+          details: {
+            row: cell.row,
+            col: cell.col,
+            description: `This is the only empty cell in the row, so it must be ${digit}.`
+          }
         });
       }
     }
 
     for (let col = 0; col < 9; col++) {
       if (this.boardCol(col).filter(cell => cell > 0).length == 8) {
+        const cell = this.emptyCellInCol(col);
+        const digit = this.missingDigit(this.boardCol(col));
+
         hints.push({
           col: col,
           type: 'fullHouse',
           link: 'full-house',
           linkText: 'Learn this technique',
           title: 'Full house',
-          description: 'This column has one empty cell — fill in the last missing digit.'
+          description: 'This column has one empty cell — fill in the last missing digit.',
+          details: {
+            row: cell.row,
+            col: cell.col,
+            description: `This is the only empty cell in the column, so it must be ${digit}.`
+          }
         });
       }
     }
@@ -206,6 +267,9 @@ export default class SudokuHints {
     for (let largeRow = 0; largeRow < 3; largeRow++) {
       for (let largeCol = 0; largeCol < 3; largeCol++) {
         if (this.boardHouse(largeRow, largeCol).filter(cell => cell > 0).length == 8) {
+          const cell = this.emptyCellInHouse(largeRow, largeCol);
+          const digit = this.missingDigit(this.boardHouse(largeRow, largeCol));
+
           hints.push({
             largeRow: largeRow,
             largeCol: largeCol,
@@ -213,7 +277,12 @@ export default class SudokuHints {
             link: 'full-house',
             linkText: 'Learn this technique',
             title: 'Full house',
-            description: 'This subgrid has one empty cell — fill in the last missing digit.'
+            description: 'This subgrid has one empty cell — fill in the last missing digit.',
+            details: {
+              row: cell.row,
+              col: cell.col,
+              description: `This is the only empty cell in the subgrid, so it must be ${digit}.`
+            }
           });
         }
       }
@@ -236,7 +305,12 @@ export default class SudokuHints {
             link: 'naked-singles',
             linkText: 'Learn this technique',
             title: 'Naked single',
-            description: 'This cell has only one possible value remaining.'
+            description: 'This cell has only one possible value remaining.',
+            details: {
+              row: row,
+              col: col,
+              description: `This cell must contain the digit ${this.candidates[row][col][0]}.`
+            }
           });
         }
       }
@@ -252,13 +326,17 @@ export default class SudokuHints {
       this.findUniqueCandidates(this.candidatesRow(row)).forEach(uniqueVal => {
         hints.push({
           row: row,
-          // col: uniqueVal.index,
           digit: uniqueVal.digit,
           type: 'hiddenSingle',
           link: 'hidden-singles',
           linkText: 'Learn this technique',
           title: 'Hidden single',
-          description: 'Look for a candidate that occurs only once in this row.'
+          description: 'Look for a candidate that occurs only once in this row.',
+          details: {
+            row: row,
+            col: uniqueVal.index,
+            description: `In this row, this is the only cell that can be ${uniqueVal.digit}.`
+          }
         });
       });
     }
@@ -266,14 +344,18 @@ export default class SudokuHints {
     for (let col = 0; col < 9; col++) {
       this.findUniqueCandidates(this.candidatesCol(col)).forEach(uniqueVal => {
         hints.push({
-          // row: uniqueVal.index,
           col: col,
           digit: uniqueVal.digit,
           type: 'hiddenSingle',
           link: 'hidden-singles',
           linkText: 'Learn this technique',
           title: 'Hidden single',
-          description: 'Look for a candidate that occurs only once in this column.'
+          description: 'Look for a candidate that occurs only once in this column.',
+          details: {
+            row: uniqueVal.index,
+            col: col,
+            description: `In this column, this is the only cell that can be ${uniqueVal.digit}.`
+          }
         });
       });
     }
@@ -281,9 +363,9 @@ export default class SudokuHints {
     for (let largeRow = 0; largeRow < 3; largeRow++) {
       for (let largeCol = 0; largeCol < 3; largeCol++) {
         this.findUniqueCandidates(this.candidatesHouse(largeRow, largeCol)).forEach(uniqueVal => {
+          const cell = this.houseCellFromIndex(largeRow, largeCol, uniqueVal.index);
+
           hints.push({
-            // row: (largeRow * 3) + Math.floor(uniqueVal.index / 3),
-            // col: (largeCol * 3) + uniqueVal.index % 3,
             largeRow: largeRow,
             largeCol: largeCol,
             digit: uniqueVal.digit,
@@ -291,7 +373,12 @@ export default class SudokuHints {
             link: 'hidden-singles',
             linkText: 'Learn this technique',
             title: 'Hidden single',
-            description: 'Look for a candidate that occurs only once in this subgrid.'
+            description: 'Look for a candidate that occurs only once in this subgrid.',
+            details: {
+              row: cell.row,
+              col: cell.col,
+              description: `In this subgrid, this is the only cell that can be ${uniqueVal.digit}.`
+            }
           });
         });
       }
@@ -349,7 +436,11 @@ export default class SudokuHints {
                 link: 'pointing',
                 linkText: 'Learn this technique',
                 title: 'Pointing',
-                description: 'Candidates for a digit are confined to one row in the subgrid — eliminate it elsewhere in the row.'
+                description: 'Candidates for a digit are confined to one row in the subgrid — eliminate it elsewhere in the row.',
+                details: {
+                  cells: pos.map(([row, col]) => ({ row, col })),
+                  description: `The digit ${digit} can only be in these locations in the row, so can be eliminated everywhere else in the same row.`
+                }
               });
             }
           }
@@ -376,7 +467,11 @@ export default class SudokuHints {
                 link: 'pointing',
                 linkText: 'Learn this technique',
                 title: 'Pointing',
-                description: 'Candidates for a digit are confined to one column in the subgrid — eliminate it elsewhere in the column.'
+                description: 'Candidates for a digit are confined to one column in the subgrid — eliminate it elsewhere in the column.',
+                details: {
+                  cells: pos.map(([row, col]) => ({ row, col })),
+                  description: `The digit ${digit} can only be in these locations in the column, so can be eliminated everywhere else in the same column.`
+                }
               });
             }
           }
@@ -427,6 +522,8 @@ export default class SudokuHints {
         }
 
         if (eliminationExists) {
+          const cells = cols.map(col => ({ row, col }));
+
           hints.push({
             row,
             largeRow,
@@ -436,7 +533,11 @@ export default class SudokuHints {
             link: 'claiming',
             linkText: 'Learn this technique',
             title: 'Claiming',
-            description: 'Candidates for a digit in this row lie within one subgrid — remove it elsewhere in that subgrid.'
+            description: 'Candidates for a digit in this row lie within one subgrid — remove it elsewhere in that subgrid.',
+            details: {
+              cells,
+              description: `The digit ${digit} can only be in these locations in the row, so can be eliminated everywhere else in the same subgrid.`
+            }
           });
         }
       }
@@ -476,6 +577,8 @@ export default class SudokuHints {
         }
 
         if (eliminationExists) {
+          const cells = rows.map(row => ({ row, col }));
+
           hints.push({
             col,
             largeRow,
@@ -485,7 +588,11 @@ export default class SudokuHints {
             link: 'claiming',
             linkText: 'Learn this technique',
             title: 'Claiming',
-            description: 'Candidates for a digit in this column lie only within one subgrid — remove it elsewhere in that subgrid.'
+            description: 'Candidates for a digit in this column lie only within one subgrid — remove it elsewhere in that subgrid.',
+            details: {
+              cells,
+              description: `The digit ${digit} can only be in these locations in the column, so can be eliminated everywhere else in the same subgrid.`
+            }
           });
         }
       }
@@ -574,13 +681,19 @@ export default class SudokuHints {
         }
 
         if (eliminationExists) {
+          const digits = u.slice().sort((a, b) => a - b);
+
           hints.push({
             row,
             type: typeKey,
             link,
             linkText,
             title,
-            description: `${word} cells in this row share ${lowerWord} digits; remove those digits from other cells in the row.`
+            description: `${word} cells in this row share ${lowerWord} digits; remove those digits from other cells in the row.`,
+            details: {
+              cells: group.map((cell) => ({ row, col: cell.col })),
+              description: `These cells are restricted to digits ${this.describeDigits(digits)} – those digits can be removed from the rest of the row.`
+            }
           });
         }
       }
@@ -610,13 +723,19 @@ export default class SudokuHints {
         }
 
         if (eliminationExists) {
+          const digits = u.slice().sort((a, b) => a - b);
+
           hints.push({
             col,
             type: typeKey,
             link,
             linkText,
             title,
-            description: `${word} cells in this column share ${lowerWord} digits; remove those digits from other cells in the column.`
+            description: `${word} cells in this column share ${lowerWord} digits; remove those digits from other cells in the column.`,
+            details: {
+              cells: group.map((cell) => ({ row: cell.row, col })),
+              description: `These cells are restricted to digits ${this.describeDigits(digits)} – those digits can be removed from the rest of the column.`
+            }
           });
         }
       }
@@ -655,6 +774,8 @@ export default class SudokuHints {
           }
 
           if (eliminationExists) {
+            const digits = u.slice().sort((a, b) => a - b);
+
             hints.push({
               largeRow,
               largeCol,
@@ -662,7 +783,11 @@ export default class SudokuHints {
               link,
               linkText,
               title,
-              description: `${word} cells in this subgrid share ${lowerWord} digits; remove those digits from other cells in the subgrid.`
+              description: `${word} cells in this subgrid share ${lowerWord} digits; remove those digits from other cells in the subgrid.`,
+              details: {
+                cells: group.map((cell) => ({ row: cell.row, col: cell.col })),
+                description: `These cells are restricted to digits ${this.describeDigits(digits)} – those digits can be removed from the rest of the subgrid.`
+              }
             });
           }
         }
@@ -735,7 +860,11 @@ export default class SudokuHints {
             link,
             linkText,
             title,
-            description: `${word} digits appear only in ${lowerWord} cells of this row; remove other candidates from those cells.`
+            description: `${word} digits appear only in ${lowerWord} cells of this row; remove other candidates from those cells.`,
+            details: {
+              cells: cols.map((col) => ({ row, col })),
+              description: `Digits ${this.describeDigits(groupDigits.sort(sortNum))} can only go in these cells in the row, so any other candidates be removed.`
+            }
           });
         }
       }
@@ -774,7 +903,11 @@ export default class SudokuHints {
             link,
             linkText,
             title,
-            description: `${word} digits appear only in ${lowerWord} cells of this column; remove other candidates from those cells.`
+            description: `${word} digits appear only in ${lowerWord} cells of this column; remove other candidates from those cells.`,
+            details: {
+              cells: rows.map((row) => ({ row, col })),
+              description: `Digits ${this.describeDigits(groupDigits.sort(sortNum))} can only go in these cells in the column, so any other candidates be removed.`
+            }
           });
         }
       }
@@ -819,7 +952,11 @@ export default class SudokuHints {
               link,
               linkText,
               title,
-              description: `${word} digits appear only in ${lowerWord} cells of this subgrid; remove other candidates from those cells.`
+              description: `${word} digits appear only in ${lowerWord} cells of this subgrid; remove other candidates from those cells.`,
+              details: {
+                cells: cells.map(([row, col]) => ({ row, col })),
+                description: `Digits ${this.describeDigits(groupDigits.sort(sortNum))} can only go in these cells in the subgrid, so any other candidates be removed.`
+              }
             });
           }
         }
@@ -876,7 +1013,16 @@ export default class SudokuHints {
             link: 'x-wing',
             linkText: 'Learn this technique',
             title: 'X-Wing',
-            description: `The digit ${digit} forms an X-Wing across two rows and two columns; eliminate it from other rows in those columns.`
+            description: `A digit forms an X-Wing across two rows and two columns; eliminate it from other rows in those columns.`,
+            details: {
+              cells: [
+                { row: r1, col: c1 },
+                { row: r1, col: c2 },
+                { row: r2, col: c1 },
+                { row: r2, col: c2 }
+              ],
+              description: `These four cells form the corners of the X-Wing for digit ${digit} – remove it as a candidate from any other cells in these two columns.`
+            }
           });
         }
       }
@@ -921,7 +1067,16 @@ export default class SudokuHints {
             link: 'x-wing',
             linkText: 'Learn this technique',
             title: 'X-Wing',
-            description: `The digit ${digit} forms an X-Wing across two columns and two rows; eliminate it from other columns in those rows.`
+            description: `A digit forms an X-Wing across two columns and two rows; eliminate it from other columns in those rows.`,
+            details: {
+              cells: [
+                { row: r1, col: c1 },
+                { row: r1, col: c2 },
+                { row: r2, col: c1 },
+                { row: r2, col: c2 }
+              ],
+              description: `These four cells form the corners of the X-Wing for digit ${digit} – remove it as a candidate from any other cells in these two rows.`
+            }
           });
         }
       }
